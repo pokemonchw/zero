@@ -17,7 +17,7 @@ type Conn struct {
 	done       chan error
 	hbTimer    *time.Timer
 	name       string
-	messageCh  chan *Message
+	messageCh  chan []byte
 	hbInterval time.Duration
 	hbTimeout  time.Duration
 }
@@ -33,7 +33,7 @@ func NewConn(c net.Conn, hbInterval time.Duration, hbTimeout time.Duration) *Con
 		rawConn:    c,
 		sendCh:     make(chan []byte, 100),
 		done:       make(chan error),
-		messageCh:  make(chan *Message, 100),
+		messageCh:  make(chan []byte, 100),
 		hbInterval: hbInterval,
 		hbTimeout:  hbTimeout,
 	}
@@ -55,13 +55,9 @@ func (c *Conn) Close() {
 }
 
 // SendMessage send message
-func (c *Conn) SendMessage(msg *Message) error {
-	pkg, err := Encode(msg)
-	if err != nil {
-		return err
-	}
+func (c *Conn) SendMessage(msg []byte) error {
 
-	c.sendCh <- pkg
+	c.sendCh <- msg
 	return nil
 }
 
@@ -85,8 +81,7 @@ func (c *Conn) writeCoroutine(ctx context.Context) {
 			}
 
 		case <-c.hbTimer.C:
-			hbMessage := NewMessage(MsgHeartbeat, hbData)
-			c.SendMessage(hbMessage)
+			c.SendMessage(hbData)
 			// 设置心跳timer
 			if c.hbInterval > 0 {
 				c.hbTimer.Reset(c.hbInterval)
@@ -137,18 +132,7 @@ func (c *Conn) readCoroutine(ctx context.Context) {
 				continue
 			}
 
-			// 解码
-			msg, err := Decode(databuf)
-			if err != nil {
-				c.done <- err
-				continue
-			}
-
-			if msg.GetID() == MsgHeartbeat {
-				continue
-			}
-
-			c.messageCh <- msg
+			c.messageCh <- databuf
 		}
 	}
 }

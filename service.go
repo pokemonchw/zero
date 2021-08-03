@@ -10,7 +10,7 @@ import (
 
 // SocketService struct
 type SocketService struct {
-	onMessage    func(*Session, *Message)
+	onMessage    func(*Session, []byte)
 	onConnect    func(*Session)
 	onDisconnect func(*Session, error)
 	sessions     *sync.Map
@@ -45,7 +45,7 @@ func NewSocketService(laddr string) (*SocketService, error) {
 }
 
 // RegMessageHandler register message handler
-func (s *SocketService) RegMessageHandler(handler func(*Session, *Message)) {
+func (s *SocketService) RegMessageHandler(handler func(*Session, []byte)) {
 	s.onMessage = handler
 }
 
