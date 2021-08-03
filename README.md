@@ -1,3 +1,5 @@
+# 自用！按需维护！不兼容！不处理issues！
+
 # zero
 A Lightweight Socket Service with heartbeat, Can be easily used in TCP server development.
 

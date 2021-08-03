@@ -1,10 +1,7 @@
 package zero
 
 import (
-	"bytes"
 	"context"
-	"encoding/binary"
-	"io"
 	"net"
 	"time"
 )
@@ -107,32 +104,9 @@ func (c *Conn) readCoroutine(ctx context.Context) {
 					continue
 				}
 			}
-			// 读取长度
-			buf := make([]byte, 4)
-			_, err := io.ReadFull(c.rawConn, buf)
-			if err != nil {
-				c.done <- err
-				continue
-			}
-
-			bufReader := bytes.NewReader(buf)
-
-			var dataSize int32
-			err = binary.Read(bufReader, binary.LittleEndian, &dataSize)
-			if err != nil {
-				c.done <- err
-				continue
-			}
-
-			// 读取数据
-			databuf := make([]byte, dataSize)
-			_, err = io.ReadFull(c.rawConn, databuf)
-			if err != nil {
-				c.done <- err
-				continue
-			}
-
-			c.messageCh <- databuf
+			buf := make([]byte, 2048)
+			c.rawConn.Read(buf)
+			c.messageCh <- buf
 		}
 	}
 }

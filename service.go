@@ -163,6 +163,7 @@ func (s *SocketService) GetConnsCount() int {
 	return count
 }
 
+/*
 // Unicast Unicast with session ID
 func (s *SocketService) Unicast(sid string, msg *Message) {
 	v, ok := s.sessions.Load(sid)
@@ -185,3 +186,4 @@ func (s *SocketService) Broadcast(msg *Message) {
 		return true
 	})
 }
+*/
